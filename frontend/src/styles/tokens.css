@@ -1,0 +1,57 @@
+/* WalCoop design tokens — polar-ocean / verifiable-data theme.
+   Source: Idea/Design 風格指引. */
+:root {
+  /* Brand */
+  --wc-blue: #1b7fff;
+  --wc-teal: #12c3a6;
+
+  /* Neutrals — backgrounds */
+  --bg-900: #050814; /* page base / hero bottom layer */
+  --bg-850: #0b121f;
+  --bg-800: #0d1220; /* cards, sidebar */
+  --bg-750: #111728; /* alt table row */
+  --bg-700: #1c2333; /* table row, card sections */
+  --bg-hover: #151c2e; /* row hover */
+  --border: #2b3445;
+
+  /* Text */
+  --text: #f3f4f7;
+  --text-2: #a5aec4;
+  --text-3: #6b7385;
+
+  /* State */
+  --error: #ff4d6a;
+  --warning: #ffc857;
+  --info: #5bc0eb;
+  --success: #12c3a6;
+
+  /* Gradients */
+  --hero-grad: linear-gradient(160deg, #050814 0%, #061b33 55%, #0b293f 100%);
+  --cta-grad: linear-gradient(135deg, #1b7fff 0%, #12c3a6 100%);
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* Spacing (4px base) */
+  --s-xs: 4px;
+  --s-s: 8px;
+  --s-m: 14px;
+  --s-l: 24px;
+  --s-xl: 36px;
+
+  /* Typography */
+  --font-sans: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', 'Noto Sans TC', sans-serif;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur: 200ms;
+
+  /* Elevation */
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --glow-blue: 0 0 12px rgba(27, 127, 255, 0.6);
+  --max-w: 1240px;
+}

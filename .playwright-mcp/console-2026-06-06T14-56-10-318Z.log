@@ -1,0 +1,2 @@
+[      88ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-UJARE54I.js?v=6b33444b:21608
+[     150ms] [WARNING] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information. @ http://localhost:5174/node_modules/.vite/deps/@mysten_dapp-kit-react_ui.js?v=6b33444b:863

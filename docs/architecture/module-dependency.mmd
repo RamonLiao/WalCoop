@@ -1,0 +1,34 @@
+graph TD
+    acl[data_coop::acl<br/>PublisherCap / ProviderCap]
+    dataset[data_coop::dataset<br/>Dataset shared]
+    campaign[data_coop::campaign<br/>Campaign shared / AccessTicket owned]
+    access[data_coop::access<br/>seal_approve]
+    settlement[data_coop::settlement<br/>UsageRecord / 分潤]
+
+    settlement --> campaign
+    settlement --> dataset
+    campaign --> dataset
+    access --> campaign
+    acl -.-> dataset
+    acl -.-> campaign
+    acl -.-> settlement
+
+    subgraph offchain[Off-chain]
+        pipeline[Dataset Pipeline]
+        worker[Model Worker]
+        job[Settlement Job]
+    end
+
+    subgraph infra[External Infra]
+        tatum[Tatum Sui RPC / Storage]
+        walrus[(Walrus<br/>encrypted blob)]
+        seal[Seal Key Servers]
+    end
+
+    pipeline -->|writeBlob| walrus
+    pipeline -->|register_dataset| tatum
+    worker -->|readBlob| walrus
+    worker -->|seal_approve / decrypt| seal
+    worker -->|settle_campaign| tatum
+    job -->|poll events| tatum
+    seal -.->|policy check| access

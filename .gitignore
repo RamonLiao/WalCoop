@@ -1,0 +1,26 @@
+# Claude workflow notes (do not upload)
+tasks/
+
+# Secrets / keys
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+suiprivkey*
+
+# Move build artifacts
+move/build/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+.env.local
+
+# Backend
+backend/node_modules/
+backend/.env
+
+# CLAUDE-related (do not upload)
+.claude/
+CLAUDE.md

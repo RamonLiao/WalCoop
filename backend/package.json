@@ -1,0 +1,26 @@
+{
+  "name": "data-coop-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "pipeline": "tsx src/cli.ts",
+    "e2e": "tsx src/e2e.ts"
+  },
+  "dependencies": {
+    "@mysten/seal": "^1.1.0",
+    "@mysten/sui": "^2.16.2",
+    "@mysten/walrus": "^1.1.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

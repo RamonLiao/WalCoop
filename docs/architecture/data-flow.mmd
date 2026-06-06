@@ -1,0 +1,38 @@
+sequenceDiagram
+    autonumber
+    actor R as Retailer
+    actor B as Brand
+    actor M as Model Provider
+    participant FE as Web dApp
+    participant BE as Backend (BFF)
+    participant SE as Seal
+    participant WA as Walrus
+    participant SUI as Sui (Tatum RPC)
+
+    Note over R,SUI: Flow A — 上傳 & 發行 Dataset
+    R->>FE: 上傳匿名化 CSV
+    FE->>BE: 送檔
+    BE->>SE: seal_encrypt(plaintext)
+    SE-->>BE: encryptedObject
+    BE->>WA: writeBlob(encrypted) → blobId
+    BE->>SUI: register_dataset(blobId, seal_inner_id, ...)
+    SUI-->>FE: DatasetRegistered(dataset_id)
+
+    Note over B,SUI: Flow B — 購買使用權 & 訓練
+    B->>FE: 選多家 dataset 建 campaign
+    FE->>SUI: create_campaign(dataset_ids, provider)
+    B->>SUI: fund_campaign(Coin<T>) → status=Active
+    SUI->>SUI: issue_access_ticket() → 給 provider
+    M->>BE: 觸發訓練
+    BE->>SE: SessionKey + seal_approve(ticket) → key shares
+    BE->>WA: readBlob(blobId) → 解密
+    BE->>BE: 訓練 → 報表
+    BE->>WA: writeBlob(report) → report_blob_id
+    M->>SUI: settle_campaign(ProviderCap, hash, report_blob_id)
+    SUI->>SUI: 按 rev_weights 拆 budget → 各 owner
+    SUI-->>FE: CampaignSettled
+
+    Note over R,SUI: Flow C — 供應者查收益
+    R->>FE: 開儀表板
+    FE->>SUI: 拉 UsageRecord
+    FE->>WA: readBlob(report) 重算驗證 hash
