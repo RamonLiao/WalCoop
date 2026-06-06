@@ -6,6 +6,7 @@ import { useToast } from '../state/ToastContext';
 import { getUsageRecord } from '../lib/chain';
 import { short, toSui } from '../lib/format';
 import { Empty, CreatedIds } from '../components/common';
+import { CapSelect, AddressSelect } from '../components/selectors';
 
 function GrantPanel() {
   const client = useDataCoopClient();
@@ -34,14 +35,10 @@ function GrantPanel() {
     <div className="panel">
       <h3>核發模型服務商授權 (Admin)</h3>
       <p className="meta" style={{ marginTop: 4 }}>持有 PublisherCap 的平台管理者可授權模型服務商進行結算。</p>
-      <div className="field mt-m">
-        <label>PublisherCap id</label>
-        <input className="input mono" value={pubCap} onChange={(e) => setPubCap(e.target.value)} placeholder="0x…" />
+      <div className="mt-m">
+        <CapSelect kind="PublisherCap" label="PublisherCap（管理者憑證）" value={pubCap} onChange={setPubCap} />
       </div>
-      <div className="field">
-        <label>模型服務商地址</label>
-        <input className="input mono" value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="0x…" />
-      </div>
+      <AddressSelect label="授權給哪個模型服務商" value={provider} onChange={setProvider} />
       <button className="btn btn-primary" disabled={busy || !pubCap.startsWith('0x') || !provider.startsWith('0x')} onClick={grant}>
         {busy ? '核發中…' : '核發 ProviderCap'}
       </button>

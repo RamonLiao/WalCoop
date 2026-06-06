@@ -4,10 +4,10 @@ import { useDataCoopClient, useExecute, useDatasets, useInvalidate, useCurrentAc
 import { useRole } from '../state/RoleContext';
 import { useToast } from '../state/ToastContext';
 import { addId } from '../lib/registry';
-import { enc, short, toSui } from '../lib/format';
-import { Empty, Skeleton, ImportIdBar } from '../components/common';
+import { enc, toSui } from '../lib/format';
+import { Empty, Skeleton, ImportIdBar, Addr } from '../components/common';
 
-function DatasetCard({ ds, action }: { ds: Dataset; action?: React.ReactNode }) {
+function DatasetCard({ ds, action, me }: { ds: Dataset; action?: React.ReactNode; me?: string }) {
   return (
     <div className="card hoverable col" style={{ gap: 12 }}>
       <div className="row between">
@@ -18,7 +18,7 @@ function DatasetCard({ ds, action }: { ds: Dataset; action?: React.ReactNode }) 
         <span className="tag tag-info">分潤 {(ds.revShareBps / 100).toFixed(0)}%</span>
         <span className="tag tag-neutral">v{String(ds.version)}</span>
       </div>
-      <div className="meta">擁有者 <span className="mono">{short(ds.owner)}</span></div>
+      <div className="row between"><span className="meta">擁有者</span><Addr value={ds.owner} me={me} /></div>
       <div className="divider" style={{ margin: '4px 0' }} />
       <div className="row between">
         <div>
@@ -122,7 +122,7 @@ export function Marketplace() {
       ) : datasets && datasets.length > 0 ? (
         <div className="grid grid-cards">
           {datasets.map((ds) => (
-            <DatasetCard key={ds.id} ds={ds} />
+            <DatasetCard key={ds.id} ds={ds} me={account?.address} />
           ))}
         </div>
       ) : (

@@ -25,6 +25,23 @@ WalCoop turns each dataset into an on-chain asset with a verifiable storage refe
 
 **The result:** retailers can sell data access with confidence, brands can audit what powered their AI outputs, and model providers can prove they used authorised datasets only.
 
+## Business Model
+
+WalCoop monetises the growing market for AI-ready first-party retail data by taking a platform fee on verifiable data campaigns.
+
+A brand funds a campaign, selects retailer datasets, and pays for time-bound, purpose-bound access rather than raw file ownership. The budget is locked on Sui, the model provider receives authorised access through `AccessTicket`, and settlement automatically splits revenue between dataset owners, model providers, and WalCoop.
+
+| Revenue Stream | How It Scales |
+|---|---|
+| **Campaign take rate** | WalCoop takes 15-25% of campaign GMV as brands buy verified retail data access. |
+| **SaaS subscriptions** | Retailers and brands pay for advanced analytics, benchmarks, API access, and audit exports. |
+| **Enterprise onboarding** | Large retailers pay setup fees for schema design, anonymisation pipelines, and private marketplace deployment. |
+| **Dataset certification** | High-quality datasets can earn verified quality scores, creating premium pricing and recurring certification revenue. |
+
+**Why this can become venture-scale:** WalCoop is not a data broker selling files. It is a programmable settlement layer for AI data rights. As more retailers contribute datasets, brands get better coverage, model providers get easier access, and dataset reputation compounds into a network effect.
+
+**Investor takeaway:** WalCoop is building the retail data co-op layer for the AI economy: marketplace GMV today, recurring workflow revenue tomorrow, and protocol-level data rights infrastructure long term.
+
 ---
 
 ## Use Cases
@@ -236,6 +253,6 @@ Environment variables are documented in `frontend/.env.example`.
 
 ## Judge Takeaway
 
-**WalCoop solves the trust gap in AI data partnerships.** Retailers keep control, brands get verifiable data provenance, model providers receive programmable access, and revenue sharing happens automatically on-chain.
+**WalCoop turns fragmented retail data into a verifiable AI revenue network.** Retailers keep control, brands buy auditable data rights, model providers receive programmable access, and WalCoop earns as campaign GMV and enterprise workflows scale.
 
 It is a hackathon-friendly MVP with a credible path to a commercial data infrastructure product.

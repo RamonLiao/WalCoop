@@ -7,7 +7,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Transaction } from '@mysten/sui/transactions';
 import { DataCoopClient, PACKAGE_ID, parseMoveError } from '../contracts';
-import { getDataset, getCampaign, getMany, createdObjectIds } from '../lib/chain';
+import { getDataset, getCampaign, getMany, createdObjectIds, getOwnedCaps } from '../lib/chain';
 import { getIds, addIds } from '../lib/registry';
 
 export function useDataCoopClient() {
@@ -53,6 +53,18 @@ export function useCampaigns() {
   return useQuery({
     queryKey: ['campaigns', PACKAGE_ID],
     queryFn: () => getMany(client, getIds('campaign'), getCampaign),
+  });
+}
+
+/** Owned capability objects of the connected wallet, for dropdown selection. */
+export function useOwnedCaps(kind: 'PublisherCap' | 'ProviderCap') {
+  const client = useCurrentClient();
+  const account = useCurrentAccount();
+  const owner = account?.address;
+  return useQuery({
+    queryKey: ['ownedCaps', kind, owner],
+    enabled: !!owner,
+    queryFn: () => getOwnedCaps(client, owner!, kind),
   });
 }
 

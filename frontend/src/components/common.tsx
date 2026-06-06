@@ -1,5 +1,34 @@
 import { useState, type ReactNode } from 'react';
 import { CampaignStatus } from '../contracts';
+import { short } from '../lib/format';
+
+/** Human-friendly address chip: short form, "(我)" if it's the connected
+ * wallet, full address on hover, click to copy. */
+export function Addr({ value, me }: { value: string; me?: string }) {
+  const [copied, setCopied] = useState(false);
+  if (!value) return <span className="meta">—</span>;
+  const isMe = !!me && value.toLowerCase() === me.toLowerCase();
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard blocked — full value is in the title tooltip */
+    }
+  };
+  return (
+    <span
+      className="mono addr-chip"
+      title={`${value}（點擊複製）`}
+      onClick={copy}
+      style={{ cursor: 'pointer' }}
+    >
+      {copied ? '已複製' : short(value)}
+      {isMe && <span className="tag tag-info" style={{ marginLeft: 6 }}>我</span>}
+    </span>
+  );
+}
 
 export function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (

@@ -39,3 +39,16 @@ export const tatumGetObject = (id: string, network?: string) =>
 
 export const tatumLatestCheckpoint = (network?: string) =>
   tatumRpc('sui_getLatestCheckpointSequenceNumber', [], network);
+
+/** Owned objects of `owner` restricted to a package module (e.g. acl), typed. */
+export const tatumGetOwnedObjects = (
+  owner: string,
+  pkg: string,
+  module: string,
+  network?: string,
+) =>
+  tatumRpc(
+    'suix_getOwnedObjects',
+    [owner, { filter: { MoveModule: { package: pkg, module } }, options: { showType: true } }],
+    network,
+  );

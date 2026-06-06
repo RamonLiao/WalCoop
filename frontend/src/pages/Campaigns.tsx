@@ -13,7 +13,8 @@ import { useRole } from '../state/RoleContext';
 import { useToast } from '../state/ToastContext';
 import { addId } from '../lib/registry';
 import { enc, short, toSui, suiToMist } from '../lib/format';
-import { Empty, Skeleton, StatusTag, ImportIdBar, CreatedIds } from '../components/common';
+import { Empty, Skeleton, StatusTag, ImportIdBar, CreatedIds, Addr } from '../components/common';
+import { CapSelect, AddressSelect } from '../components/selectors';
 
 function CreatePanel() {
   const client = useDataCoopClient();
@@ -53,9 +54,8 @@ function CreatePanel() {
     <div className="panel">
       <h3>建立資料方案</h3>
       <p className="meta" style={{ marginTop: 4 }}>挑選要使用的資料集，並指定模型服務商。</p>
-      <div className="field mt-m">
-        <label>模型服務商地址</label>
-        <input className="input mono" value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="0x…" />
+      <div className="mt-m">
+        <AddressSelect label="模型服務商" value={provider} onChange={setProvider} />
       </div>
       <div className="field">
         <label>選擇資料集 ({selected.length})</label>
@@ -142,7 +142,10 @@ function CampaignCard({ c }: { c: Campaign }) {
   return (
     <div className="card col" style={{ gap: 12 }}>
       <div className="row between">
-        <h3 className="mono">{short(c.id, 6)}</h3>
+        <div className="col" style={{ gap: 2 }}>
+          <span className="meta">資料方案</span>
+          <Addr value={c.id} />
+        </div>
         <StatusTag status={c.status} />
       </div>
       <div className="stat-row" style={{ gap: 10 }}>
@@ -150,7 +153,9 @@ function CampaignCard({ c }: { c: Campaign }) {
         <div><div className="meta">資料集</div><strong>{c.datasetIds.length}</strong></div>
         <div><div className="meta">底價</div><strong>{toSui(c.priceFloor)} SUI</strong></div>
       </div>
-      <div className="meta">買方 {short(c.buyer)} · 服務商 {short(c.modelProvider)}</div>
+      <div className="divider" />
+      <div className="row between"><span className="meta">買方</span><Addr value={c.buyer} me={account?.address} /></div>
+      <div className="row between"><span className="meta">模型服務商</span><Addr value={c.modelProvider} me={account?.address} /></div>
 
       {role === 'brand' && isBuyer && c.status === CampaignStatus.Pending && (
         <div className="row" style={{ gap: 8 }}>
@@ -162,8 +167,8 @@ function CampaignCard({ c }: { c: Campaign }) {
         <button className="btn btn-secondary btn-sm" disabled={busy} onClick={cancel}>取消並退款</button>
       )}
       {role === 'provider' && isProvider && c.status === CampaignStatus.Active && (
-        <div className="row" style={{ gap: 8 }}>
-          <input className="input mono" placeholder="ProviderCap id 0x…" value={capId} onChange={(e) => setCapId(e.target.value)} />
+        <div className="col" style={{ gap: 8 }}>
+          <CapSelect kind="ProviderCap" label="用哪個 ProviderCap 結算" value={capId} onChange={setCapId} />
           <button className="btn btn-primary btn-sm" disabled={busy || !capId.startsWith('0x')} onClick={settle}>結算分潤</button>
         </div>
       )}

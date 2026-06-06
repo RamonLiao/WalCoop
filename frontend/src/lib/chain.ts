@@ -14,9 +14,60 @@ import {
   type Campaign,
   type UsageRecord,
 } from '../contracts';
-import { tatumEnabled, tatumGetObject } from './tatum';
+import { tatumEnabled, tatumGetObject, tatumGetOwnedObjects } from './tatum';
+import { PACKAGE_ID } from '../contracts';
 
 type AnyClient = any;
+
+export interface OwnedCap {
+  id: string;
+  /** short label for the dropdown, e.g. "ProviderCap · 0x18cd…cdae" */
+  label: string;
+}
+
+/** Pull the object id + type from whatever owned-object entry shape we get. */
+function ownedEntry(o: any): { id?: string; type?: string } {
+  const d = o?.data ?? o; // Tatum wraps each in { data: {...} }
+  return {
+    id: d?.objectId ?? d?.object_id ?? d?.id,
+    type: d?.type ?? d?.objectType ?? d?.object_type,
+  };
+}
+
+/**
+ * List capability objects of `kind` (acl::PublisherCap | acl::ProviderCap)
+ * owned by `owner`, for dropdown selection instead of pasting ids.
+ */
+export async function getOwnedCaps(
+  client: AnyClient,
+  owner: string,
+  kind: 'PublisherCap' | 'ProviderCap',
+): Promise<OwnedCap[]> {
+  const wantType = `${PACKAGE_ID}::acl::${kind}`;
+  let raw: any[];
+  if (tatumEnabled) {
+    const res = await tatumGetOwnedObjects(owner, PACKAGE_ID, 'acl');
+    raw = res?.data ?? [];
+  } else {
+    const opts = {
+      owner,
+      filter: { MoveModule: { package: PACKAGE_ID, module: 'acl' } },
+      options: { showType: true },
+    };
+    const res =
+      (await client?.core?.getOwnedObjects?.(opts)) ??
+      (await client?.getOwnedObjects?.(opts));
+    raw = res?.data ?? res?.objects ?? [];
+  }
+  return raw
+    .map(ownedEntry)
+    .filter((e) => e.id && e.type === wantType)
+    .map((e) => ({ id: e.id as string, label: `${kind} · ${shortId(e.id as string)}` }));
+}
+
+function shortId(id: string): string {
+  return id.length > 12 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
+}
 
 /** Extract the Move struct fields from whatever object-response shape we get. */
 function extractFields(obj: any): Record<string, any> | null {

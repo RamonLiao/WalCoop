@@ -24,3 +24,8 @@ backend/.env
 # CLAUDE-related (do not upload)
 .claude/
 CLAUDE.md
+
+# Tool / build artifacts
+.playwright-mcp/
+frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo
