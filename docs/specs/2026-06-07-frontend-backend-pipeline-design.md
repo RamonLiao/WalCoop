@@ -62,6 +62,8 @@ fund tx（`fundCampaign` + `issueAccessTicket`）的 `createdDetailed` 取 Acces
 3. 錢包簽 `settleCampaign`(真 `reportBlobId` + 真 `usageStatsHash`，取代目前 placeholder)
 4. UI 顯示模型輸出 + reportBlobId；保留「查看分潤明細 →」跳轉
 
+> **SUI best-practice（架構 review）**：步驟 1 的 `SessionKey.create({ suiClient })` 與後端 `buildSealApproveTxBytes` 一律用 **`SuiGrpcClient`（GA）**，不可接 Tatum JSON-RPC（已棄用，見 §7）。
+
 ---
 
 ## 4. 新依賴與設定
@@ -78,6 +80,7 @@ fund tx（`fundCampaign` + `issueAccessTicket`）的 `createdDetailed` 取 Acces
 - 後端離線 / CORS 失敗 → toast 提示，不讓畫面卡死。
 - 檔案大小限制（後端 `express.json` 10mb；過大前端先擋）。
 - Walrus 讀寫已有 retry（沿用）。
+- **encrypt→updateBlob 原子性**：register→`/encrypt`→`updateBlob` 跨「鏈上+鏈下+鏈上」三段。若 `/encrypt` 成功但 `updateBlob` 被拒簽/失敗 → dataset 卡 placeholder、Walrus 留孤兒 blob。處理：暫存 `{datasetId, blobId}`，UI 提供「重試綁定」只重送 `updateBlob`，**不重新加密上傳**（避免重複寫 Walrus）。
 
 ---
 
@@ -94,6 +97,7 @@ fund tx（`fundCampaign` + `issueAccessTicket`）的 `createdDetailed` 取 Acces
 
 | 項目 | 本版（hackathon） | GTM 終態 |
 |---|---|---|
+| **READ 路徑協定（首要）** | Tatum **JSON-RPC**（`sui_getObject` / `suix_getOwnedObjects`） | **遷移到 gRPC**。風險 **high**：JSON-RPC 已 deprecated、Quorum Driver 已停、官方計畫 2026/4 移除。修法橫跨前後端（`lib/tatum.ts`/`chain.ts` 的讀取改 gRPC equivalents） |
 | 後端簽署 endpoint | 保留舊 `/datasets`、`/settle`（持熱私鑰） | **刪除**；請求路徑上不存在任何可簽交易的熱私鑰（= 方向 2） |
 | 平台 admin 簽署（核發 ProviderCap） | deployer 熱 key 簽 | **multisig / KMS**，不可熱簽 |
 | Tatum API key | 打包進前端 bundle | **後端 proxy**，key 不外洩 |
