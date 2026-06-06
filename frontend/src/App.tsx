@@ -8,6 +8,12 @@ import { PACKAGE_ID } from './contracts';
 
 export default function App() {
   const [view, setView] = useState<View>('home');
+  // One-click "view settlement": jump to Reports with a UsageRecord id prefilled.
+  const [reportId, setReportId] = useState<string>('');
+  const viewReport = (id: string) => {
+    setReportId(id);
+    setView('reports');
+  };
 
   if (view === 'home') {
     return (
@@ -25,7 +31,7 @@ export default function App() {
           className={`side-item ${view === v ? 'active' : ''}`}
           onClick={() => setView(v)}
         >
-          {v === 'marketplace' ? 'Dataset 市集' : v === 'campaigns' ? '資料方案' : '使用紀錄'}
+          {v === 'marketplace' ? 'Dataset Marketplace' : v === 'campaigns' ? 'Campaigns' : 'Usage Records'}
         </div>
       ))}
       <div className="divider" />
@@ -41,8 +47,8 @@ export default function App() {
   return (
     <Layout view={view} setView={setView} sidebar={sidebar}>
       {view === 'marketplace' && <Marketplace />}
-      {view === 'campaigns' && <Campaigns />}
-      {view === 'reports' && <Reports />}
+      {view === 'campaigns' && <Campaigns onViewReport={viewReport} />}
+      {view === 'reports' && <Reports initialId={reportId} />}
     </Layout>
   );
 }

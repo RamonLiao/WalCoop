@@ -11,18 +11,18 @@ function DatasetCard({ ds, action, me }: { ds: Dataset; action?: React.ReactNode
   return (
     <div className="card hoverable col" style={{ gap: 12 }}>
       <div className="row between">
-        <h3>{ds.name || '未命名資料集'}</h3>
-        {ds.listed ? <span className="tag tag-active">已上架</span> : <span className="tag tag-neutral">未上架</span>}
+        <h3>{ds.name || 'Untitled dataset'}</h3>
+        {ds.listed ? <span className="tag tag-active">Listed</span> : <span className="tag tag-neutral">Unlisted</span>}
       </div>
       <div className="row wrap" style={{ gap: 6 }}>
-        <span className="tag tag-info">分潤 {(ds.revShareBps / 100).toFixed(0)}%</span>
+        <span className="tag tag-info">Rev share {(ds.revShareBps / 100).toFixed(0)}%</span>
         <span className="tag tag-neutral">v{String(ds.version)}</span>
       </div>
-      <div className="row between"><span className="meta">擁有者</span><Addr value={ds.owner} me={me} /></div>
+      <div className="row between"><span className="meta">Owner</span><Addr value={ds.owner} me={me} /></div>
       <div className="divider" style={{ margin: '4px 0' }} />
       <div className="row between">
         <div>
-          <div className="meta">單價</div>
+          <div className="meta">Unit price</div>
           <div style={{ fontWeight: 600 }}>{toSui(ds.pricing.unitPrice)} SUI</div>
         </div>
         {action}
@@ -58,7 +58,10 @@ function RegisterPanel() {
       );
       addIds('dataset', created);
       await invalidate('datasets');
-      toast.push('Dataset 已在 Sui 上註冊');
+      // Tatum read node may lag fullnode finality by a checkpoint; re-fetch once
+      // shortly after so the new shared object reliably shows without a tab switch.
+      setTimeout(() => { invalidate('datasets'); }, 1500);
+      toast.push('Dataset registered on Sui');
       setName('');
     } catch (e) {
       toast.push((e as Error).message, 'error');
@@ -69,25 +72,25 @@ function RegisterPanel() {
 
   return (
     <div className="panel">
-      <h3>註冊你的資料集</h3>
-      <p className="meta" style={{ marginTop: 4 }}>匿名化、聚合後的資料才會被收錄；原始 PII 留在你的系統內。</p>
+      <h3>Register your dataset</h3>
+      <p className="meta" style={{ marginTop: 4 }}>Only anonymised, aggregated data is listed; the raw PII stays inside your own systems.</p>
       <div className="mt-m">
         <div className="field">
-          <label>名稱</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：每日商品銷售彙總 TW" />
+          <label>Name</label>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Daily product sales summary, UK" />
         </div>
         <div className="row" style={{ gap: 12 }}>
           <div className="field" style={{ flex: 1 }}>
-            <label>單價 (SUI / 次)</label>
+            <label>Unit price (SUI / use)</label>
             <input className="input" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
           </div>
           <div className="field" style={{ flex: 1 }}>
-            <label>分潤比例 (%)</label>
+            <label>Revenue share (%)</label>
             <input className="input" value={revShare} onChange={(e) => setRevShare(e.target.value)} />
           </div>
         </div>
         <button className="btn btn-primary" style={{ width: '100%' }} disabled={!name || busy} onClick={submit}>
-          {busy ? '註冊中…' : '上架資料集'}
+          {busy ? 'Registering…' : 'List dataset'}
         </button>
       </div>
     </div>
@@ -104,8 +107,8 @@ export function Marketplace() {
     <div className="grid" style={{ gap: 28 }}>
       <div className="row between wrap">
         <div>
-          <h2>Dataset 市集</h2>
-          <p className="meta">可驗證的零售資料，供品牌與模型訓練使用。</p>
+          <h2>Dataset Marketplace</h2>
+          <p className="meta">Verifiable retail data for brands and model training.</p>
         </div>
         <ImportIdBar
           onImport={async (id) => {
@@ -115,7 +118,7 @@ export function Marketplace() {
         />
       </div>
 
-      {role === 'retailer' && (account ? <RegisterPanel /> : <div className="panel meta">連接錢包以註冊資料集。</div>)}
+      {role === 'retailer' && (account ? <RegisterPanel /> : <div className="panel meta">Connect a wallet to register a dataset.</div>)}
 
       {isLoading ? (
         <Skeleton rows={4} />
@@ -126,7 +129,7 @@ export function Marketplace() {
           ))}
         </div>
       ) : (
-        <Empty>還沒有資料集。{role === 'retailer' ? '從上方註冊第一個。' : '匯入 id 或請供應者上架。'}</Empty>
+        <Empty>No datasets yet. {role === 'retailer' ? 'Register the first one above.' : 'Import an id or ask a provider to list one.'}</Empty>
       )}
     </div>
   );

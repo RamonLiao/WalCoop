@@ -115,10 +115,16 @@ export async function getMany<T>(
   ids: string[],
   fetcher: (c: AnyClient, id: string) => Promise<T | null>,
 ): Promise<T[]> {
-  const out = await Promise.all(
-    ids.map((id) => fetcher(client, id).catch(() => null)),
-  );
-  return (out as (T | null)[]).filter((x): x is T => x !== null);
+  // Batch to cap concurrency — Tatum's free gateway 429s on request bursts when
+  // the registry holds many ids.
+  const BATCH = 3;
+  const out: (T | null)[] = [];
+  for (let i = 0; i < ids.length; i += BATCH) {
+    const slice = ids.slice(i, i + BATCH);
+    const res = await Promise.all(slice.map((id) => fetcher(client, id).catch(() => null)));
+    out.push(...res);
+  }
+  return out.filter((x): x is T => x !== null);
 }
 
 /**
@@ -126,6 +132,39 @@ export async function getMany<T>(
  * register newly-created shared objects into the local discovery registry
  * (we avoid requiring a full indexer for the hackathon MVP).
  */
+export type OwnerKind = 'Immutable' | 'Shared' | 'Address' | 'Object' | 'Unknown';
+
+/** Normalize the many owner shapes (gRPC v2 enum, legacy JSON-RPC) to a kind. */
+function ownerKind(o: any): OwnerKind {
+  if (!o) return 'Unknown';
+  if (typeof o === 'string') {
+    if (o === 'Immutable') return 'Immutable';
+    return 'Unknown';
+  }
+  const k = o.$kind ?? Object.keys(o)[0];
+  if (k === 'Immutable') return 'Immutable';
+  if (k === 'Shared') return 'Shared';
+  if (k === 'AddressOwner') return 'Address';
+  if (k === 'ObjectOwner') return 'Object';
+  return 'Unknown';
+}
+
+/** Created objects with their ownership kind, so callers can tell a frozen
+ * UsageRecord (Immutable) apart from payout Coins (Address-owned). */
+export function createdObjects(txResult: any): { id: string; owner: OwnerKind }[] {
+  const eff = txResult?.Transaction?.effects ?? txResult?.effects ?? {};
+  const changed: any[] = eff?.changedObjects ?? eff?.created ?? [];
+  const out: { id: string; owner: OwnerKind }[] = [];
+  for (const c of changed) {
+    const op = c?.idOperation;
+    if (op === 'Deleted' || op === 'None') continue;
+    const id = c?.reference?.objectId ?? c?.objectId ?? c?.id ?? c?.object_id;
+    if (typeof id !== 'string') continue;
+    out.push({ id, owner: ownerKind(c?.outputOwner ?? c?.owner) });
+  }
+  return out;
+}
+
 export function createdObjectIds(txResult: any): string[] {
   const eff = txResult?.Transaction?.effects ?? txResult?.effects ?? {};
   // gRPC v2: effects.changedObjects[] tagged with idOperation ('Created' |

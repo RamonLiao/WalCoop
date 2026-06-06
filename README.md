@@ -31,68 +31,29 @@ WalCoop monetises the growing market for AI-ready first-party retail data by tak
 
 A brand funds a campaign, selects retailer datasets, and pays for time-bound, purpose-bound access rather than raw file ownership. The budget is locked on Sui, the model provider receives authorised access through `AccessTicket`, and settlement automatically splits revenue between dataset owners, model providers, and WalCoop.
 
-| Revenue Stream | How It Scales |
-|---|---|
-| **Campaign take rate** | WalCoop takes 15-25% of campaign GMV as brands buy verified retail data access. |
-| **SaaS subscriptions** | Retailers and brands pay for advanced analytics, benchmarks, API access, and audit exports. |
-| **Enterprise onboarding** | Large retailers pay setup fees for schema design, anonymisation pipelines, and private marketplace deployment. |
-| **Dataset certification** | High-quality datasets can earn verified quality scores, creating premium pricing and recurring certification revenue. |
-
 **Why this can become venture-scale:** WalCoop is not a data broker selling files. It is a programmable settlement layer for AI data rights. As more retailers contribute datasets, brands get better coverage, model providers get easier access, and dataset reputation compounds into a network effect.
 
 **Investor takeaway:** WalCoop is building the retail data co-op layer for the AI economy: marketplace GMV today, recurring workflow revenue tomorrow, and protocol-level data rights infrastructure long term.
+
+Revenue streams: campaign take rate, SaaS subscriptions, enterprise onboarding, and dataset certification.
 
 ---
 
 ## Use Cases
 
-### 🛒 Retailer / DTC Brand
-
-A retailer uploads anonymised sales, basket, loyalty, or product performance data. The platform encrypts the dataset, stores it on Walrus, and registers it on Sui as a `Dataset` object. The retailer can then list it in a marketplace and earn automatically whenever it is used in a campaign.
-
-### 📣 Brand / Advertiser
-
-A brand browses available datasets, selects retail partners, funds a campaign, and receives a model report such as demand forecasts, category trends, or audience insights. Every dataset used, every report reference, and every payment split is auditable on-chain.
-
-### 🤖 AI / Analytics Provider
-
-A model provider receives an `AccessTicket`, decrypts only the datasets authorised for that campaign, runs the model pipeline, uploads the output report to Walrus, and triggers settlement through the Sui contract.
-
----
-
-## Target Users
-
-| User | Pain Point | What They Gain |
-|---|---|---|
-| **Retailers and DTC brands** | First-party data is under-monetised, but raw sharing creates commercial and privacy risk. | New revenue from anonymised datasets, transparent usage records, and automated settlement. |
-| **Brands and advertisers** | AI models need high-quality retail data, but current data partnerships are opaque and hard to compare. | Verifiable data provenance, multi-retailer campaigns, and auditable AI outputs. |
-| **AI and analytics providers** | Data access is fragmented, manual, and difficult to prove to customers. | A programmable access layer with clear authorisation, expiry, and report publication. |
-| **Retail media operators** | Revenue sharing and partner reporting are operationally heavy. | On-chain campaign settlement and tamper-resistant usage records. |
+- **Retailers and DTC brands** upload anonymised sales, basket, loyalty, or product performance data, then earn whenever their datasets are used.
+- **Brands and advertisers** fund campaigns, select trusted retail datasets, and receive auditable AI reports for forecasting, category trends, or campaign insight.
+- **AI and analytics providers** receive campaign-scoped access, run authorised model pipelines, publish reports, and get paid automatically.
 
 ---
 
 ## Main Features
 
-- 🧩 **Dataset registration**
-  - Retailers register encrypted datasets as Sui `Dataset` objects.
-  - Each object points to a Walrus blob and schema manifest.
-
-- 🔐 **On-chain access control**
-  - Campaign-specific `AccessTicket` objects define who can decrypt which datasets and until when.
-  - Seal key release is governed by the Move `seal_approve` policy.
-
-- 💰 **Campaign funding and settlement**
-  - Brands fund campaigns with `Coin<T>` support for SUI or future stablecoin flows.
-  - Settlement distributes revenue to dataset owners according to configured weights.
-
-- 📊 **Verifiable AI reports**
-  - Model output reports are uploaded to Walrus.
-  - Report blob IDs and usage hashes are written back to Sui for auditability.
-
-- 🧑‍💼 **Role-based dApp experience**
-  - Retailer dashboard: upload, list, and track revenue.
-  - Brand dashboard: discover datasets, create campaigns, and view reports.
-  - Model provider dashboard: manage access tickets and execution status.
+- 🧩 **Dataset registration:** encrypted retailer datasets become Sui `Dataset` objects pointing to Walrus blobs and schema manifests.
+- 🔐 **Policy-bound access:** campaign-specific `AccessTicket` objects define who can decrypt which datasets and when access expires.
+- 💰 **Automatic settlement:** funded campaigns distribute revenue to dataset owners and model providers according to configured weights.
+- 📊 **Verifiable AI reports:** output reports are uploaded to Walrus, with usage hashes and report blob IDs written back to Sui.
+- 🧑‍💼 **Role-based dApp:** retailer, brand, and model provider dashboards map directly to the end-to-end commercial flow.
 
 ---
 
@@ -123,16 +84,7 @@ A model provider receives an `AccessTicket`, decrypts only the datasets authoris
 └──────────────┘  └──────────────┘        └──────────────────────┘
 ```
 
-### Core On-chain Objects
-
-| Object | Purpose |
-|---|---|
-| `Dataset` | Represents a retailer-owned dataset, its Walrus blob, schema URI, pricing, version, and revenue share weight. |
-| `Campaign<T>` | Holds the buyer, model provider, selected datasets, funded budget, and campaign status. |
-| `AccessTicket` | Grants a model provider time-limited access to authorised datasets. |
-| `UsageRecord` | Stores campaign usage evidence, report blob ID, settled amounts, and settlement timestamp. |
-
-### Why Walrus + Sui Is Not Replaceable Here
+## Why Walrus + Sui Is Not Replaceable Here
 
 This is not just decentralised file storage. The product depends on the combination of:
 
@@ -142,43 +94,26 @@ This is not just decentralised file storage. The product depends on the combinat
 - **Policy-bound decryption:** Seal checks the on-chain `AccessTicket` before releasing decryption shares.
 - **Automatic revenue sharing:** the same contract that grants access also settles usage.
 
+Core objects include `Dataset`, `Campaign<T>`, `AccessTicket`, and `UsageRecord`. See [`docs/specs/`](docs/specs/) for deeper technical details.
+
 ---
 
 ## Hackathon Demo Flow
 
-1. **Retailer uploads a CSV**
-   - The dataset is encrypted and stored on Walrus.
-   - A Sui `Dataset` object is registered with the Walrus blob ID.
-
-2. **Brand creates a campaign**
-   - The brand selects one or more datasets.
-   - The campaign is funded on Sui.
-   - An `AccessTicket` is issued to the model provider.
-
-3. **Model provider runs analysis**
-   - The worker decrypts authorised data through Seal.
-   - A simple model or analytics job generates a report.
-   - The report is uploaded to Walrus.
-
-4. **Settlement is triggered**
-   - `settle_campaign` writes a `UsageRecord`.
-   - Funds are split automatically between dataset owners.
-   - The brand can verify which datasets produced the report.
+1. A retailer uploads an anonymised CSV, which is encrypted, stored on Walrus, and registered as a Sui `Dataset`.
+2. A brand selects datasets, funds a campaign, and issues an `AccessTicket` to the model provider.
+3. The model provider decrypts only authorised data through Seal, runs analysis, and uploads the report to Walrus.
+4. `settle_campaign` writes a `UsageRecord`, splits funds automatically, and lets the brand verify which datasets produced the report.
 
 ---
 
 ## Repository Structure
 
-```text
-.
-├── BUSINESS_SPEC.md                  # Full business specification
-├── docs/
-│   ├── deployment.md                 # Testnet deployment record
-│   ├── security/threat-model.md      # Threat model and residual risks
-│   └── specs/                        # Technical architecture spec
-├── frontend/                         # React + Vite dApp
-└── move/                             # Sui Move smart contracts and tests
-```
+- [`BUSINESS_SPEC.md`](BUSINESS_SPEC.md): original business specification.
+- [`BUSINESS_SPEC.en-GB.md`](BUSINESS_SPEC.en-GB.md): UK English business specification for judges and investors.
+- [`docs/`](docs/): deployment, security, and technical specs.
+- [`frontend/`](frontend/): React + Vite dApp.
+- [`move/`](move/): Sui Move smart contracts and tests.
 
 ---
 
@@ -218,36 +153,10 @@ Environment variables are documented in `frontend/.env.example`.
 
 ## Roadmap
 
-### Phase 0 — Hackathon MVP
-
-- ✅ Move objects for datasets, campaigns, access tickets, usage records, and settlement.
-- ✅ Testnet package deployment.
-- 🔄 End-to-end demo flow from dataset upload to campaign settlement.
-- 🔄 Frontend marketplace and role-based dashboards.
-- 🔄 Toy model worker that proves authorised Walrus data was used.
-
-### Phase 1 — Alpha
-
-- Multi-dataset campaign composition across several retailers.
-- More flexible pricing: per use, per volume, or per training hour.
-- Stronger marketplace filters by category, region, time window, and schema.
-- Provider and retailer dashboards with revenue, usage, and campaign charts.
-- Pilot with sandbox data from 1-2 retailers or DTC brands.
-
-### Phase 2 — Beta
-
-- Production-grade AI workflows for demand forecasting, promotion simulation, and campaign insight.
-- Standardised retail data schemas for product, basket, region, and channel data.
-- Indexer-backed analytics for historical usage and revenue reporting.
-- Integration with retail media networks, CDPs, and clean-room operators.
-- Stablecoin settlement and stronger multi-party governance for upgrade authority.
-
-### Phase 3 — Commercial Network
-
-- A verified data marketplace for retail AI partnerships.
-- Dataset certification and quality scoring.
-- Enterprise audit exports for procurement, compliance, and model governance.
-- Cross-market expansion beyond retail into supply chain and commerce intelligence.
+- **Phase 0 — Hackathon MVP:** deployed Move package, dataset/campaign/access/settlement objects, role-based dApp, and demo worker flow.
+- **Phase 1 — Alpha:** multi-retailer campaigns, richer pricing, marketplace filters, dashboards, and pilots with sandbox retail data.
+- **Phase 2 — Beta:** production forecasting and campaign insight workflows, standard schemas, indexer-backed analytics, and stablecoin settlement.
+- **Phase 3 — Commercial Network:** verified retail AI data marketplace with certification, enterprise audit exports, and expansion into adjacent commerce data verticals.
 
 ---
 

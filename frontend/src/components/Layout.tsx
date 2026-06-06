@@ -6,10 +6,10 @@ import { usingTatum } from '../dapp-kit';
 export type View = 'home' | 'marketplace' | 'campaigns' | 'reports';
 
 const NAV: { key: View; label: string }[] = [
-  { key: 'home', label: '首頁' },
-  { key: 'marketplace', label: 'Dataset 市集' },
-  { key: 'campaigns', label: '資料方案' },
-  { key: 'reports', label: '使用紀錄' },
+  { key: 'home', label: 'Home' },
+  { key: 'marketplace', label: 'Dataset Marketplace' },
+  { key: 'campaigns', label: 'Campaigns' },
+  { key: 'reports', label: 'Usage Records' },
 ];
 
 const ROLES: Role[] = ['retailer', 'brand', 'provider'];
@@ -49,7 +49,7 @@ export function Layout({
           </div>
           <div className="nav-spacer" />
           {usingTatum && (
-            <span className="tag tag-info" title="鏈上讀取經由 Tatum gateway">
+            <span className="tag tag-info" title="On-chain reads served via the Tatum gateway">
               Powered by Tatum
             </span>
           )}
@@ -58,7 +58,7 @@ export function Layout({
             style={{ width: 'auto' }}
             value={role}
             onChange={(e) => setRole(e.target.value as Role)}
-            title="切換角色"
+            title="Switch role"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>

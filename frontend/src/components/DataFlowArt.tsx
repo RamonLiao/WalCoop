@@ -14,7 +14,7 @@ export function DataFlowArt() {
     `M ${a.x} ${a.y} C ${(a.x + b.x) / 2 + 20} ${a.y}, ${(a.x + b.x) / 2 - 20} ${b.y}, ${b.x} ${b.y}`;
 
   return (
-    <svg className="data-flow" viewBox="0 0 470 400" role="img" aria-label="資料從零售商流向 WalCoop 核心再進入 AI">
+    <svg className="data-flow" viewBox="0 0 470 400" role="img" aria-label="Data flows from retailers through the WalCoop core into AI">
       <defs>
         <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#1b7fff" stopOpacity="0.55" />

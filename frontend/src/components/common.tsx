@@ -20,12 +20,12 @@ export function Addr({ value, me }: { value: string; me?: string }) {
   return (
     <span
       className="mono addr-chip"
-      title={`${value}（點擊複製）`}
+      title={`${value} (click to copy)`}
       onClick={copy}
       style={{ cursor: 'pointer' }}
     >
-      {copied ? '已複製' : short(value)}
-      {isMe && <span className="tag tag-info" style={{ marginLeft: 6 }}>我</span>}
+      {copied ? 'Copied' : short(value)}
+      {isMe && <span className="tag tag-info" style={{ marginLeft: 6 }}>You</span>}
     </span>
   );
 }
@@ -40,10 +40,10 @@ export function Stat({ label, value }: { label: string; value: ReactNode }) {
 }
 
 const STATUS_META: Record<CampaignStatus, { cls: string; text: string }> = {
-  [CampaignStatus.Pending]: { cls: 'tag-warn', text: '待付款' },
-  [CampaignStatus.Active]: { cls: 'tag-active', text: '進行中' },
-  [CampaignStatus.Settled]: { cls: 'tag-info', text: '已結算' },
-  [CampaignStatus.Cancelled]: { cls: 'tag-neutral', text: '已取消' },
+  [CampaignStatus.Pending]: { cls: 'tag-warn', text: 'Awaiting Payment' },
+  [CampaignStatus.Active]: { cls: 'tag-active', text: 'Active' },
+  [CampaignStatus.Settled]: { cls: 'tag-info', text: 'Settled' },
+  [CampaignStatus.Cancelled]: { cls: 'tag-neutral', text: 'Cancelled' },
 };
 
 export function StatusTag({ status }: { status: CampaignStatus }) {
@@ -86,7 +86,7 @@ export function CreatedIds({ label, ids }: { label: string; ids: string[] }) {
         <div key={id} className="row between mt-s" style={{ gap: 8 }}>
           <span className="mono" style={{ wordBreak: 'break-all', fontSize: 13 }}>{id}</span>
           <button className="btn btn-secondary btn-sm" style={{ flexShrink: 0 }} onClick={() => copy(id)}>
-            {copied === id ? '已複製' : '複製'}
+            {copied === id ? 'Copied' : 'Copy'}
           </button>
         </div>
       ))}
@@ -98,22 +98,24 @@ export function CreatedIds({ label, ids }: { label: string; ids: string[] }) {
 export function ImportIdBar({ onImport }: { onImport: (id: string) => void }) {
   const [id, setId] = useState('');
   return (
-    <div className="row" style={{ gap: 8 }}>
+    <div className="row" style={{ gap: 8, flexWrap: 'wrap', maxWidth: '100%' }}>
       <input
         className="input"
-        placeholder="貼上 object id 匯入 (0x…)"
+        style={{ flex: '1 1 200px', minWidth: 0, maxWidth: 280 }}
+        placeholder="Paste an object id to import (0x…)"
         value={id}
         onChange={(e) => setId(e.target.value)}
       />
       <button
         className="btn btn-secondary btn-sm"
+        style={{ flexShrink: 0 }}
         disabled={!id.startsWith('0x')}
         onClick={() => {
           onImport(id.trim());
           setId('');
         }}
       >
-        匯入
+        Import
       </button>
     </div>
   );

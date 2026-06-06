@@ -4,28 +4,28 @@
 
 export const MOVE_ERRORS: Record<string, Record<string, string>> = {
   dataset: {
-    ENotOwner: '只有資料擁有者可以修改這個 dataset。',
-    EInvalidRevShare: '分潤比例必須介於 1 到 10000 (基點)。',
-    EInvalidPricingModel: '未知的定價模型。',
+    ENotOwner: 'Only the dataset owner can modify this dataset.',
+    EInvalidRevShare: 'Revenue share must be between 1 and 10000 (basis points).',
+    EInvalidPricingModel: 'Unknown pricing model.',
   },
   campaign: {
-    ENotBuyer: '只有方案建立者 (買方) 可以執行這個操作。',
-    ECampaignNotActive: '方案尚未啟用 (需先付款)。',
-    EAlreadyFinalized: '方案已結算或已取消。',
-    EEmptyBasket: '方案至少要包含一個 dataset。',
-    EDatasetNotListed: '該 dataset 尚未上架。',
-    EExpiryInPast: '授權到期時間必須在未來。',
-    EUnderfunded: '預算低於資料組合的底價，無法取得使用授權。',
+    ENotBuyer: 'Only the campaign creator (buyer) can perform this action.',
+    ECampaignNotActive: 'The campaign is not active yet (payment required first).',
+    EAlreadyFinalized: 'The campaign has already been settled or cancelled.',
+    EEmptyBasket: 'A campaign must include at least one dataset.',
+    EDatasetNotListed: 'This dataset is not listed yet.',
+    EExpiryInPast: 'The licence expiry time must be in the future.',
+    EUnderfunded: 'The budget is below the basket floor price; access licence cannot be issued.',
   },
   access: {
-    EWrongProvider: '只有被授權的模型服務商可以解密。',
-    EExpired: '存取授權已過期。',
-    ENoAccess: '該 dataset 不在授權範圍內。',
+    EWrongProvider: 'Only the authorised model provider can decrypt.',
+    EExpired: 'The access licence has expired.',
+    ENoAccess: 'This dataset is not within the licensed scope.',
   },
   settlement: {
-    EProviderMismatch: 'ProviderCap 與方案指定的模型服務商不符。',
-    EDatasetOrderMismatch: 'dataset 順序與方案中記錄的不一致。',
-    EIncompleteSettlement: '尚未付款給所有 dataset，無法完成結算。',
+    EProviderMismatch: 'The ProviderCap does not match the model provider named in the campaign.',
+    EDatasetOrderMismatch: 'The dataset order does not match what was recorded in the campaign.',
+    EIncompleteSettlement: 'Not all datasets have been paid; settlement cannot complete.',
   },
 };
 

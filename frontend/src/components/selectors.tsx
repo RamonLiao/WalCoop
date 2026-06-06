@@ -30,13 +30,13 @@ export function CapSelect({
     <div className="field">
       <label>{label}</label>
       {isLoading ? (
-        <div className="input meta">讀取中…</div>
+        <div className="input meta">Loading…</div>
       ) : list.length === 0 ? (
-        <div className="input meta">此錢包沒有可用的 {kind}</div>
+        <div className="input meta">This wallet has no available {kind}</div>
       ) : (
         <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
           <option value="" disabled>
-            選擇一個 {kind}…
+            Select a {kind}…
           </option>
           {list.map((c) => (
             <option key={c.id} value={c.id}>
@@ -68,6 +68,12 @@ export function AddressSelect({
 
   const mode = manual || (value && value !== me) ? 'manual' : 'me';
 
+  // Default to "me": push the connected address up so the value is real, not
+  // just visually selected. Without this the parent stays '' and gates submit.
+  useEffect(() => {
+    if (!manual && me && value !== me) onChange(me);
+  }, [manual, me, value, onChange]);
+
   return (
     <div className="field">
       <label>{label}</label>
@@ -85,9 +91,9 @@ export function AddressSelect({
         }}
       >
         <option value="me" disabled={!me}>
-          我自己{me ? ` (${short(me)})` : '（請先連錢包）'}
+          Myself{me ? ` (${short(me)})` : ' (connect a wallet first)'}
         </option>
-        <option value="manual">手動輸入其他地址…</option>
+        <option value="manual">Enter another address manually…</option>
       </select>
       {mode === 'manual' && (
         <input

@@ -3,9 +3,9 @@ import { createContext, useContext, useState, type ReactNode } from 'react';
 export type Role = 'retailer' | 'brand' | 'provider';
 
 export const ROLE_LABELS: Record<Role, string> = {
-  retailer: '資料供應者',
-  brand: '品牌方',
-  provider: '模型服務商',
+  retailer: 'Data Provider',
+  brand: 'Brand',
+  provider: 'Model Provider',
 };
 
 interface RoleCtx {

@@ -13,7 +13,7 @@ import { useRole } from '../state/RoleContext';
 import { useToast } from '../state/ToastContext';
 import { addId } from '../lib/registry';
 import { enc, short, toSui, suiToMist } from '../lib/format';
-import { Empty, Skeleton, StatusTag, ImportIdBar, CreatedIds, Addr } from '../components/common';
+import { Empty, Skeleton, StatusTag, ImportIdBar, Addr } from '../components/common';
 import { CapSelect, AddressSelect } from '../components/selectors';
 
 function CreatePanel() {
@@ -41,7 +41,9 @@ function CreatePanel() {
       );
       addIds('campaign', created);
       await invalidate('campaigns');
-      toast.push('資料方案已建立 (待付款)');
+      // Tatum read node may lag fullnode finality; re-fetch once shortly after.
+      setTimeout(() => { invalidate('campaigns'); }, 1500);
+      toast.push('Campaign created (awaiting payment)');
       setSelected([]);
     } catch (e) {
       toast.push((e as Error).message, 'error');
@@ -52,13 +54,13 @@ function CreatePanel() {
 
   return (
     <div className="panel">
-      <h3>建立資料方案</h3>
-      <p className="meta" style={{ marginTop: 4 }}>挑選要使用的資料集，並指定模型服務商。</p>
+      <h3>Create a campaign</h3>
+      <p className="meta" style={{ marginTop: 4 }}>Pick the datasets you want to use and name the model provider.</p>
       <div className="mt-m">
-        <AddressSelect label="模型服務商" value={provider} onChange={setProvider} />
+        <AddressSelect label="Model provider" value={provider} onChange={setProvider} />
       </div>
       <div className="field">
-        <label>選擇資料集 ({selected.length})</label>
+        <label>Select datasets ({selected.length})</label>
         <div className="grid" style={{ gap: 8, maxHeight: 220, overflow: 'auto' }}>
           {(datasets ?? []).filter((d) => d.listed).map((d) => (
             <label key={d.id} className="row between card" style={{ padding: '10px 14px', cursor: 'pointer' }}>
@@ -69,20 +71,20 @@ function CreatePanel() {
               <span className="meta">{toSui(d.pricing.unitPrice)} SUI · {(d.revShareBps / 100).toFixed(0)}%</span>
             </label>
           ))}
-          {(!datasets || datasets.length === 0) && <span className="meta">市集尚無資料集。</span>}
+          {(!datasets || datasets.length === 0) && <span className="meta">No datasets in the marketplace yet.</span>}
         </div>
       </div>
       <div className="row between">
-        <span className="meta">底價合計 <strong>{toSui(floor)} SUI</strong></span>
+        <span className="meta">Floor total <strong>{toSui(floor)} SUI</strong></span>
         <button className="btn btn-primary" disabled={!provider.startsWith('0x') || selected.length === 0 || busy} onClick={submit}>
-          {busy ? '建立中…' : '建立方案'}
+          {busy ? 'Creating…' : 'Create campaign'}
         </button>
       </div>
     </div>
   );
 }
 
-function CampaignCard({ c }: { c: Campaign }) {
+function CampaignCard({ c, onViewReport }: { c: Campaign; onViewReport: (id: string) => void }) {
   const client = useDataCoopClient();
   const exec = useExecute();
   const invalidate = useInvalidate();
@@ -92,7 +94,8 @@ function CampaignCard({ c }: { c: Campaign }) {
   const [amount, setAmount] = useState(toSui(c.priceFloor || 1n));
   const [capId, setCapId] = useState('');
   const [busy, setBusy] = useState(false);
-  const [usageIds, setUsageIds] = useState<string[]>([]);
+  const [usageId, setUsageId] = useState<string>('');
+  const [payoutIds, setPayoutIds] = useState<string[]>([]);
 
   const isBuyer = account?.address === c.buyer;
   const isProvider = account?.address === c.modelProvider;
@@ -102,6 +105,7 @@ function CampaignCard({ c }: { c: Campaign }) {
     try {
       await fn();
       await invalidate('campaigns');
+      setTimeout(() => { invalidate('campaigns'); }, 1500);
     } catch (e) {
       toast.push((e as Error).message, 'error');
     } finally {
@@ -115,18 +119,18 @@ function CampaignCard({ c }: { c: Campaign }) {
         client.fundCampaign(tx, { campaignId: c.id, amount: suiToMist(amount) });
         client.issueAccessTicket(tx, { campaignId: c.id, expiryMs: BigInt(Date.now() + 7 * 86400_000) });
       });
-      toast.push('已付款並核發使用授權');
+      toast.push('Paid and access licence issued');
     });
 
   const cancel = () =>
     run(async () => {
       await exec((tx) => client.cancelCampaign(tx, c.id));
-      toast.push('方案已取消，預算退回');
+      toast.push('Campaign cancelled, budget refunded');
     });
 
   const settle = () =>
     run(async () => {
-      const { created } = await exec((tx) =>
+      const { createdDetailed } = await exec((tx) =>
         client.settleCampaign(tx, {
           providerCapId: capId,
           campaignId: c.id,
@@ -135,49 +139,68 @@ function CampaignCard({ c }: { c: Campaign }) {
           reportBlobId: enc(`walrus:report:${c.id}`),
         }),
       );
-      setUsageIds(created);
-      toast.push('結算完成，分潤已上鏈');
+      // UsageRecord is frozen (Immutable); payout Coins are address-owned.
+      setUsageId(createdDetailed.find((o) => o.owner === 'Immutable')?.id ?? '');
+      setPayoutIds(createdDetailed.filter((o) => o.owner === 'Address').map((o) => o.id));
+      toast.push('Settlement complete, revenue share recorded on-chain');
     });
 
   return (
     <div className="card col" style={{ gap: 12 }}>
       <div className="row between">
         <div className="col" style={{ gap: 2 }}>
-          <span className="meta">資料方案</span>
+          <span className="meta">Campaign</span>
           <Addr value={c.id} />
         </div>
         <StatusTag status={c.status} />
       </div>
       <div className="stat-row" style={{ gap: 10 }}>
-        <div><div className="meta">預算</div><strong>{toSui(c.budget)} SUI</strong></div>
-        <div><div className="meta">資料集</div><strong>{c.datasetIds.length}</strong></div>
-        <div><div className="meta">底價</div><strong>{toSui(c.priceFloor)} SUI</strong></div>
+        <div><div className="meta">Budget</div><strong>{toSui(c.budget)} SUI</strong></div>
+        <div><div className="meta">Datasets</div><strong>{c.datasetIds.length}</strong></div>
+        <div><div className="meta">Floor</div><strong>{toSui(c.priceFloor)} SUI</strong></div>
       </div>
       <div className="divider" />
-      <div className="row between"><span className="meta">買方</span><Addr value={c.buyer} me={account?.address} /></div>
-      <div className="row between"><span className="meta">模型服務商</span><Addr value={c.modelProvider} me={account?.address} /></div>
+      <div className="row between"><span className="meta">Buyer</span><Addr value={c.buyer} me={account?.address} /></div>
+      <div className="row between"><span className="meta">Model provider</span><Addr value={c.modelProvider} me={account?.address} /></div>
 
       {role === 'brand' && isBuyer && c.status === CampaignStatus.Pending && (
         <div className="row" style={{ gap: 8 }}>
           <input className="input" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <button className="btn btn-primary btn-sm" disabled={busy} onClick={fundAndAuthorize}>付款並授權</button>
+          <button className="btn btn-primary btn-sm" disabled={busy} onClick={fundAndAuthorize}>Pay &amp; authorise</button>
         </div>
       )}
       {role === 'brand' && isBuyer && c.status === CampaignStatus.Active && (
-        <button className="btn btn-secondary btn-sm" disabled={busy} onClick={cancel}>取消並退款</button>
+        <button className="btn btn-secondary btn-sm" disabled={busy} onClick={cancel}>Cancel &amp; refund</button>
       )}
       {role === 'provider' && isProvider && c.status === CampaignStatus.Active && (
         <div className="col" style={{ gap: 8 }}>
-          <CapSelect kind="ProviderCap" label="用哪個 ProviderCap 結算" value={capId} onChange={setCapId} />
-          <button className="btn btn-primary btn-sm" disabled={busy || !capId.startsWith('0x')} onClick={settle}>結算分潤</button>
+          <CapSelect kind="ProviderCap" label="Which ProviderCap to settle with" value={capId} onChange={setCapId} />
+          <button className="btn btn-primary btn-sm" disabled={busy || !capId.startsWith('0x')} onClick={settle}>Settle revenue share</button>
         </div>
       )}
-      <CreatedIds label="結算產生的 UsageRecord id（到使用紀錄頁查詢）" ids={usageIds} />
+      {usageId && (
+        <div className="panel mt-m" style={{ background: 'var(--bg-700)' }}>
+          <div className="row between">
+            <div className="col" style={{ gap: 2 }}>
+              <span className="meta">UsageRecord (revenue-share receipt)</span>
+              <Addr value={usageId} />
+            </div>
+            <button className="btn btn-primary btn-sm" onClick={() => onViewReport(usageId)}>
+              View revenue breakdown →
+            </button>
+          </div>
+          {payoutIds.length > 0 && (
+            <div className="meta mt-s">
+              {payoutIds.length} payout(s) also sent to provider wallets (Coin objects, not receipts).
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-export function Campaigns() {
+export function Campaigns({ onViewReport }: { onViewReport: (id: string) => void }) {
   const { role } = useRole();
   const account = useCurrentAccount();
   const { data: campaigns, isLoading } = useCampaigns();
@@ -187,24 +210,24 @@ export function Campaigns() {
     <div className="grid" style={{ gap: 28 }}>
       <div className="row between wrap">
         <div>
-          <h2>資料方案</h2>
-          <p className="meta">建立、付款、授權與結算，全程鏈上可查。</p>
+          <h2>Campaigns</h2>
+          <p className="meta">Create, pay, authorise and settle — every step auditable on-chain.</p>
         </div>
         <ImportIdBar onImport={async (id) => { addId('campaign', id); await invalidate('campaigns'); }} />
       </div>
 
-      {role === 'brand' && (account ? <CreatePanel /> : <div className="panel meta">連接錢包以建立方案。</div>)}
+      {role === 'brand' && (account ? <CreatePanel /> : <div className="panel meta">Connect a wallet to create a campaign.</div>)}
 
       {isLoading ? (
         <Skeleton rows={4} />
       ) : campaigns && campaigns.length > 0 ? (
         <div className="grid grid-cards">
           {campaigns.map((c) => (
-            <CampaignCard key={c.id} c={c} />
+            <CampaignCard key={c.id} c={c} onViewReport={onViewReport} />
           ))}
         </div>
       ) : (
-        <Empty>還沒有資料方案。{role === 'brand' ? '從上方建立第一個。' : '匯入 campaign id 查看。'}</Empty>
+        <Empty>No campaigns yet. {role === 'brand' ? 'Create the first one above.' : 'Import a campaign id to view it.'}</Empty>
       )}
     </div>
   );
