@@ -70,7 +70,7 @@ export function Reports({ initialId = '' }: { initialId?: string }) {
     }
   };
 
-  // Arrived here via "查看分潤": prefill the id and auto-query.
+  // Arrived here via "View revenue breakdown": prefill the id and auto-query.
   useEffect(() => {
     if (initialId) {
       setId(initialId);

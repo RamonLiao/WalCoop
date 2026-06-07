@@ -50,7 +50,7 @@ export function CapSelect({
 }
 
 /**
- * Address picker: defaults to "我自己 (connected wallet)" with a fallback to
+ * Address picker: defaults to "Myself (connected wallet)" with a fallback to
  * manual paste. Keeps single-wallet demos one-click while staying flexible.
  */
 export function AddressSelect({

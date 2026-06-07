@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { CampaignStatus } from '../contracts';
 import { short } from '../lib/format';
 
-/** Human-friendly address chip: short form, "(我)" if it's the connected
+/** Human-friendly address chip: short form, "You" tag if it's the connected
  * wallet, full address on hover, click to copy. */
 export function Addr({ value, me }: { value: string; me?: string }) {
   const [copied, setCopied] = useState(false);

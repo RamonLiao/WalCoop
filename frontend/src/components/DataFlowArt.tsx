@@ -1,4 +1,4 @@
-// Hero "資料路徑" — retail nodes stream data through the WalCoop core into AI.
+// Hero "data path" — retail nodes stream data through the WalCoop core into AI.
 // On-brand (TRON-style data path), CSS-animated, no external assets.
 export function DataFlowArt() {
   const retail = [
